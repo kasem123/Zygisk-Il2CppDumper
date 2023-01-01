@@ -1,9 +1,9 @@
 ext {
     moduleLibraryName = "il2cppdumper"
-    magiskModuleId = "zygisk_il2cppdumper"
-    moduleName = "Il2CppDumper"
-    moduleAuthor = "Perfare"
-    moduleDescription = "Il2CppDumper Zygisk version."
-    moduleVersion = "v1.0.0"
-    moduleVersionCode = 1
+    magiskModuleId = "zygisk_il2cppdumper_pgrbili"
+    moduleName = "Il2CppDumper For PGR Bili"
+    moduleAuthor = "Perfare, Ophelia"
+    moduleDescription = "Zygisk-Il2CppDumper for Punishing: Gray Raven (bili edition)."
+    moduleVersion = "v1.0.1"
+    moduleVersionCode = 100001
 }
