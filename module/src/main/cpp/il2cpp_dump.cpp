@@ -11,6 +11,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <codecvt>
 #include "log.h"
 #include "il2cpp-tabledefs.h"
 #include "il2cpp-class.h"
@@ -112,6 +113,26 @@ bool _il2cpp_type_is_byref(const Il2CppType *type) {
         byref = il2cpp_type_is_byref(type);
     }
     return byref;
+}
+
+std::string _il2cpp_string_to_cstring(const Il2CppString* str) {
+    std::u16string u16(reinterpret_cast<const char16_t*>(str->chars));
+    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(u16);
+}
+
+std::string _to_string(char *desc) {
+    std::string str;
+    auto size = sizeof(desc);
+    for (int i = 0; i < size; i++) {
+        str += desc[i];
+    }
+    return str;
+}
+
+char* _to_char_array(const std::string& str) {
+    char* target_array = new char[str.length() + 1];
+    strcpy(target_array, str.c_str());
+    return target_array;
 }
 
 std::string dump_method(Il2CppClass *klass) {
@@ -216,6 +237,83 @@ std::string dump_property(Il2CppClass *klass) {
     return outPut.str();
 }
 
+std::string dump_field_value(FieldInfo *field) {
+    auto name = il2cpp_type_get_name(il2cpp_field_get_type(field));
+    LOGD("dump_field_value: %s", il2cpp_field_get_name(field));
+    LOGD("Type name: %s", name);
+    if (strcmp(name, "System.String") == 0) {
+        Il2CppString* value = nullptr;
+        il2cpp_field_static_get_value(field, &value);
+        if (value == nullptr) {
+            return "null";
+        } else {
+            return '\"' + _il2cpp_string_to_cstring(value) + '\"';
+        }
+    }
+    if (strcmp(name, "System.Char") == 0) {
+        char val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        std::string str(1, val);
+        return '\'' + str + '\'';
+    }
+    if (strcmp(name, "System.Byte") == 0) {
+        unsigned char val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.SByte") == 0) {
+        signed char val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.Single") == 0) {
+        float_t val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.Double") == 0) {
+        double_t val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.Boolean") == 0) {
+        bool val = false;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.Int16") == 0) {
+        int16_t val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.Int32") == 0) {
+        int32_t val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.Int64") == 0) {
+        int64_t val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.UInt16") == 0) {
+        uint16_t val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.UInt32") == 0) {
+        uint32_t val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    if (strcmp(name, "System.UInt64") == 0) {
+        uint64_t val = 0;
+        il2cpp_field_static_get_value(field, &val);
+        return std::to_string(val);
+    }
+    return "";
+}
+
 std::string dump_field(Il2CppClass *klass) {
     std::stringstream outPut;
     outPut << "\n\t// Fields\n";
@@ -262,6 +360,15 @@ std::string dump_field(Il2CppClass *klass) {
             uint64_t val = 0;
             il2cpp_field_static_get_value(field, &val);
             outPut << " = " << std::dec << val;
+        } else if (attrs & FIELD_ATTRIBUTE_LITERAL) {
+            if (il2cpp_image_get_class) {
+                auto field_value_string = dump_field_value(field);
+                if (strcmp(_to_char_array(field_value_string), "") != 0) {
+                    outPut << " = " << dump_field_value(field);
+                }
+            } else {
+                LOGE("dump_field_value not implement in old version.");
+            }
         }
         outPut << "; // 0x" << std::hex << il2cpp_field_get_offset(field) << "\n";
     }
@@ -371,7 +478,8 @@ void il2cpp_dump(void *handle, char *outDir) {
     std::stringstream imageOutput;
     for (int i = 0; i < size; ++i) {
         auto image = il2cpp_assembly_get_image(assemblies[i]);
-        imageOutput << "// Image " << i << ": " << il2cpp_image_get_name(image) << "\n";
+        auto name = il2cpp_image_get_name(image);
+        imageOutput << "// Image " << i << ": " << name << "\n";
     }
     std::vector<std::string> outPuts;
     if (il2cpp_image_get_class) {
@@ -379,6 +487,23 @@ void il2cpp_dump(void *handle, char *outDir) {
         //使用il2cpp_image_get_class
         for (int i = 0; i < size; ++i) {
             auto image = il2cpp_assembly_get_image(assemblies[i]);
+            auto name = il2cpp_image_get_name(image);
+            if (strcmp(name, "Assembly-CSharp.dll") == 0) {
+                auto target_class = il2cpp_class_from_name(image, "", "XResourceManager");
+                auto field = il2cpp_class_get_field_from_name(target_class, "ASSET_BUNDLE_DECRYPT_KEY");
+                if (field == nullptr) {
+                    LOGW("Failed to get ASSET_BUNDLE_DECRYPT_KEY field.");
+                } else {
+                    Il2CppString* value = nullptr;
+                    il2cpp_field_static_get_value(field, &value);
+                    if (value == nullptr) {
+                        LOGW("Failed to get ASSET_BUNDLE_DECRYPT_KEY.");
+                    } else {
+                        auto key = _il2cpp_string_to_cstring(value);
+                        LOGI("ASSET_BUNDLE_DECRYPT_KEY: %s", _to_char_array(key));
+                    }
+                }
+            }
             std::stringstream imageStr;
             imageStr << "\n// Dll : " << il2cpp_image_get_name(image);
             auto classCount = il2cpp_image_get_class_count(image);
