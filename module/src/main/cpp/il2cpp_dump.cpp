@@ -239,8 +239,8 @@ std::string dump_property(Il2CppClass *klass) {
 
 std::string dump_field_value(FieldInfo *field) {
     auto name = il2cpp_type_get_name(il2cpp_field_get_type(field));
-    LOGD("dump_field_value: %s", il2cpp_field_get_name(field));
-    LOGD("Type name: %s", name);
+    LOGV("dump_field_value: %s", il2cpp_field_get_name(field));
+    LOGV("Type name: %s", name);
     if (strcmp(name, "System.String") == 0) {
         Il2CppString* value = nullptr;
         il2cpp_field_static_get_value(field, &value);
@@ -487,8 +487,7 @@ void il2cpp_dump(void *handle, char *outDir) {
         //使用il2cpp_image_get_class
         for (int i = 0; i < size; ++i) {
             auto image = il2cpp_assembly_get_image(assemblies[i]);
-            auto name = il2cpp_image_get_name(image);
-            if (strcmp(name, "Assembly-CSharp.dll") == 0) {
+            if (strcmp(il2cpp_image_get_name(image), "Assembly-CSharp.dll") == 0) {
                 auto target_class = il2cpp_class_from_name(image, "", "XResourceManager");
                 auto field = il2cpp_class_get_field_from_name(target_class, "ASSET_BUNDLE_DECRYPT_KEY");
                 if (field == nullptr) {
