@@ -4,6 +4,6 @@ ext {
     moduleName = "Il2CppDumper For PGR Bili"
     moduleAuthor = "Perfare, Ophelia"
     moduleDescription = "Zygisk-Il2CppDumper for Punishing: Gray Raven (bili edition)."
-    moduleVersion = "v1.0.1"
-    moduleVersionCode = 100001
+    moduleVersion = "v1.0.2"
+    moduleVersionCode = 100002
 }
