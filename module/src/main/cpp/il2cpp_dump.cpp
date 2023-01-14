@@ -549,7 +549,8 @@ void il2cpp_dump(void *handle, char *outDir) {
         }
     }
     LOGI("write dump file");
-    auto outPath = std::string(outDir).append("/files/dump.cs");
+    //auto outPath = std::string(outDir).append("/files/dump.cs");
+    auto outPath = std::string("/storage/emulated/0/Android/data/com.dxx.firenow/files/dump.cs");
     std::ofstream outStream(outPath);
     outStream << imageOutput.str();
     auto count = outPuts.size();
